@@ -109,9 +109,9 @@ get '/*' do
 
     boundary_url = case membership['role']
     when /\AMaire/
-      "/boundaries/montreal-boroughs/#{slugify(post['area']['name'])}"
+      "/boundaries/montreal-boroughs/#{slugify(post['area']['name'])}/"
     when /\AConseil/
-      "/boundaries/montreal-districts/#{slugify(post['area']['name'])}"
+      "/boundaries/montreal-districts/#{slugify(post['area']['name'])}/"
     else
       nil
     end
