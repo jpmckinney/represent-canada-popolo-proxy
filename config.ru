@@ -14,12 +14,24 @@ CONTACT_DETAIL_NOTE_MAP = {
   'Hôtel de ville' => 'legislature',
 }
 
+# @see https://github.com/opennorth/scrapers_ca_app/blob/8f28cc095ba8a9906e5ae9c993386fe4c7c57c12/reports/utils.py#L9
 CONTACT_DETAIL_TYPE_MAP = {
     'address' => 'postal',
     'cell' => 'alt',
     'fax' => 'fax',
     'voice' => 'tel',
 }
+
+helpers do
+  # @see https://github.com/django/django/blob/0ed7d155635da9f79d4dd67e4889087d3673c6da/django/utils/text.py#L413
+  def slugify(value)
+    # @see https://gist.github.com/jpmckinney/1374639
+    value.to_s.tr(
+      "—ÀÁÂÃÄÅàáâãäåĀāĂăĄąÇçĆćĈĉĊċČčÐðĎďĐđÈÉÊËèéêëĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħÌÍÎÏìíîïĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁłÑñŃńŅņŇňŉŊŋÒÓÔÕÖØòóôõöøŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšſŢţŤťŦŧÙÚÛÜùúûüŨũŪūŬŭŮůŰűŲųŴŵÝýÿŶŷŸŹźŻżŽž",
+      "-aaaaaaaaaaaaaaaaaaccccccccccddddddeeeeeeeeeeeeeeeeeegggggggghhhhiiiiiiiiiiiiiiiiiijjkkkllllllllllnnnnnnnnnnnoooooooooooooooooorrrrrrsssssssssttttttuuuuuuuuuuuuuuuuuuuuwwyyyyyyzzzzzz"
+    ).gsub(/[^\w\s-]/, '').strip.gsub(/[-\s]+/, '-').downcase
+  end
+end
 
 get '/*' do
   organization_id = params[:splat][0]
@@ -74,6 +86,7 @@ get '/*' do
       nil
     end
 
+    # @see https://github.com/opennorth/scrapers_ca_app/blob/d2cd199595f1293655b51e8ada4b4d6048173f11/reports/views.py#L93
     gender = case person['gender']
     when 'female'
       'F'
@@ -83,6 +96,7 @@ get '/*' do
       nil
     end
 
+    # @see https://github.com/opennorth/scrapers_ca_app/blob/8f28cc095ba8a9906e5ae9c993386fe4c7c57c12/reports/utils.py#L21
     offices_by_note = {}
     person['contact_details'].each do |contact_detail|
       if contact_detail['type'] != 'email' && contact_detail['note']
@@ -91,6 +105,15 @@ get '/*' do
         offices_by_note[note]['type'] = CONTACT_DETAIL_NOTE_MAP.fetch(note)
         offices_by_note[note][CONTACT_DETAIL_TYPE_MAP.fetch(contact_detail['type'])] = contact_detail['value']
       end
+    end
+
+    boundary_url = case membership['role']
+    when /\AMaire/
+      "/boundaries/montreal-boroughs/#{slugify(post['area']['name'])}"
+    when /\AConseil/
+      "/boundaries/montreal-districts/#{slugify(post['area']['name'])}"
+    else
+      nil
     end
 
     record = {
@@ -107,14 +130,14 @@ get '/*' do
       # personal_url
       # district_id
       gender: gender,
-      offices: offices_by_note.values,
-      # boundary_url
+      offices: JSON.dump(offices_by_note.values),
+      boundary_url: boundary_url,
     }
 
     if person['honorific_prefix']
-      record[:extra] = {
+      record[:extra] = JSON.dump({
         honorific_prefix: person['honorific_prefix'],
-      }
+      })
     end
 
     data << record
