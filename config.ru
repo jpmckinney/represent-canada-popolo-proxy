@@ -7,7 +7,7 @@ require 'json'
 require 'faraday'
 require 'sinatra'
 
-BASE_URL = 'http://scrapers-ruby.herokuapp.com/'
+BASE_URL = 'https://scrapers-ruby.herokuapp.com/'
 
 CONTACT_DETAIL_NOTE_MAP = {
   'Arrondissement' => 'constituency',
@@ -69,13 +69,13 @@ get '/*' do
   end
 
   boundaries = {}
-  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0').body)['objects'].each do |boundary|
+  JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0').body)['objects'].each do |boundary|
     boundaries[boundary['name']] = boundary['url']
   end
-  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/montreal-boroughs/?limit=0').body)['objects'].each do |boundary|
+  JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/montreal-boroughs/?limit=0').body)['objects'].each do |boundary|
     boundaries[boundary['name']] = boundary['url']
   end
-  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/montreal-districts/?limit=0').body)['objects'].each do |boundary|
+  JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/montreal-districts/?limit=0').body)['objects'].each do |boundary|
     boundaries[boundary['name']] = boundary['url']
   end
 
