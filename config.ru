@@ -68,6 +68,17 @@ get '/*' do
     posts[post['_id']] = post
   end
 
+  boundaries = {}
+  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0').body)['objects'].each do |boundary|
+    boundaries[boundary['name']] = boundary['url']
+  end
+  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/montreal-boroughs/?limit=0').body)['objects'].each do |boundary|
+    boundaries[boundary['name']] = boundary['url']
+  end
+  JSON.load(Faraday.get('http://represent.opennorth.ca/boundaries/montreal-districts/?limit=0').body)['objects'].each do |boundary|
+    boundaries[boundary['name']] = boundary['url']
+  end
+
   source_url = "#{BASE_URL}memberships?organization_id=#{organization_id}"
   response = Faraday.get(source_url)
   return response.status if response.status != 200
@@ -107,15 +118,6 @@ get '/*' do
       end
     end
 
-    boundary_url = case membership['role']
-    when /\AMaire/
-      "/boundaries/montreal-boroughs/#{slugify(post['area']['name'])}/"
-    when /\AConseil/
-      "/boundaries/montreal-districts/#{slugify(post['area']['name'])}/"
-    else
-      nil
-    end
-
     record = {
       name: person['name'],
       district_name: post['area']['name'],
@@ -131,7 +133,7 @@ get '/*' do
       # district_id
       gender: gender,
       offices: JSON.dump(offices_by_note.values),
-      boundary_url: boundary_url,
+      boundary_url: boundaries[post['area']['name']],
     }
 
     if person['honorific_prefix']
