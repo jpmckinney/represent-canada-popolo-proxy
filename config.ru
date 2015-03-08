@@ -94,7 +94,7 @@ get '/*' do
     end
 
     record = {
-      name: person['given_name'],
+      name: person['name'],
       district_name: post['area']['name'],
       elected_office: membership['role'],
       source_url: source_url,
