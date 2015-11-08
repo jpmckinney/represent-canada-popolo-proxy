@@ -70,13 +70,13 @@ get '/*' do
 
   boundaries = {}
   JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0').body)['objects'].each do |boundary|
-    boundaries[boundary['name']] = boundary['url']
+    boundaries[slugify(boundary['name'])] = boundary['url']
   end
   JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/montreal-boroughs/?limit=0').body)['objects'].each do |boundary|
-    boundaries[boundary['name']] = boundary['url']
+    boundaries[slugify(boundary['name'])] = boundary['url']
   end
   JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/montreal-districts/?limit=0').body)['objects'].each do |boundary|
-    boundaries[boundary['name']] = boundary['url']
+    boundaries[slugify(boundary['name'])] = boundary['url']
   end
 
   source_url = "#{BASE_URL}memberships?organization_id=#{organization_id}"
@@ -133,7 +133,7 @@ get '/*' do
       # district_id
       gender: gender,
       offices: JSON.dump(offices_by_note.values),
-      boundary_url: boundaries[post['area']['name']],
+      boundary_url: boundaries[slugify(post['area']['name'])],
     }
 
     if person['honorific_prefix']
