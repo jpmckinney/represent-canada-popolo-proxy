@@ -71,7 +71,7 @@ get '/*' do
   boundaries = {}
   offset = 0
   begin
-    body = JSON.load(Faraday.get('https://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0').body)
+    body = JSON.load(Faraday.get("https://represent.opennorth.ca/boundaries/census-subdivisions/?limit=0&offset=#{offset}").body)
     body['objects'].each do |boundary|
       boundaries[boundary['name']] = boundary['url']
     end
